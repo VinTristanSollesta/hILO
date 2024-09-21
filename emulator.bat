@@ -1,0 +1,1 @@
+cd C:\Users\vintr\AppData\Local\Android\Sdk\emulator @Medium_Phone_API_35
