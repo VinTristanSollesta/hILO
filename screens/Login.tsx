@@ -1,12 +1,10 @@
 import React from "react";
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
-import styles from "./Styles";
+import styles from "../Styles";
 
-export default function App() {
-  const [form, setForm] = React.useState({
-    username: "",
-    password: "",
-  });
+const Login = () => {
+  const [username, setUsername] = React.useState("Username");
+  const [password, setPassword] = React.useState("Password");
   return (
     <View style={styles.container}>
       <View>
@@ -16,17 +14,16 @@ export default function App() {
             <TextInput
               style={styles.inputText}
               editable
-              onChangeText={(username) => setForm({ ...form, username })}
+              onChangeText={setUsername}
               placeholder="Username"
-              value={form.username}
+              value={username}
             />
             <TextInput
               style={styles.inputText}
               editable
-              onChangeText={(password) => setForm({ ...form, password })}
+              onChangeText={setPassword}
               placeholder="Password"
-              keyboardType="visible-password"
-              value={form.password}
+              value={password}
             />
             <Pressable>
               <Text>Submit</Text>
@@ -36,4 +33,6 @@ export default function App() {
       </View>
     </View>
   );
-}
+};
+
+export default Login;
