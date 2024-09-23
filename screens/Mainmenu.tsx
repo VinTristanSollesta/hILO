@@ -1,16 +1,47 @@
 import React from "react";
 
-import { View, Text } from "react-native";
-
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { View, Text, Pressable } from "react-native";
 
 import Styles from "../Styles";
 
-const Mainmenu = () => {
+import { StackNavigationProp } from "@react-navigation/stack";
+
+// Define the type for the navigation prop
+type RootStackParamList = {
+  Login: undefined;
+  Mainmenu: undefined; // Add other routes as needed
+};
+
+type LoginScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Login"
+>;
+
+type Props = {
+  navigation: LoginScreenNavigationProp;
+};
+
+const Mainmenu: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={Styles.container}>
-      <Text>Main menu</Text>
+      <View style={Styles.card}>
+        <Pressable
+          style={Styles.button}
+          onPress={() => {
+            navigation.navigate("OpenCamera");
+          }}
+        >
+          <Text>Scan Camera</Text>
+        </Pressable>
+        <Pressable
+          style={Styles.button}
+          onPress={() => {
+            navigation.navigate("Library");
+          }}
+        >
+          <Text>Open Library</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };
