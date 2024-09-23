@@ -1,31 +1,69 @@
 import React from "react";
-import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import styles from "../Styles";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-const Login = () => {
-  const [username, setUsername] = React.useState("Username");
-  const [password, setPassword] = React.useState("Password");
+// Define the type for the navigation prop
+type RootStackParamList = {
+  Login: undefined;
+  Mainmenu: undefined; // Add other routes as needed
+};
+
+type LoginScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Login"
+>;
+
+type Props = {
+  navigation: LoginScreenNavigationProp;
+};
+
+const Login: React.FC<Props> = ({ navigation }) => {
+  const [form, setForm] = React.useState({
+    username: "",
+    password: "",
+  });
+
+  const handleSubmit = () => {
+    if (form.username === "admin" && form.password === "pass") {
+      Alert.alert("Successful login");
+      navigation.navigate("Mainmenu");
+    } else {
+      Alert.alert("Username and password mismatched.");
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={styles.containerLogin}>
       <View>
         <SafeAreaView>
           <View style={styles.card}>
-            <Text>Login</Text>
+            <Text style={styles.titleText}>Login</Text>
+            <Text>Username</Text>
             <TextInput
               style={styles.inputText}
               editable
-              onChangeText={setUsername}
+              onChangeText={(username) => setForm({ ...form, username })}
               placeholder="Username"
-              value={username}
+              value={form.username}
             />
+            <Text>Password</Text>
             <TextInput
               style={styles.inputText}
               editable
-              onChangeText={setPassword}
+              secureTextEntry={true}
+              onChangeText={(password) => setForm({ ...form, password })}
               placeholder="Password"
-              value={password}
+              value={form.password}
             />
-            <Pressable>
+            <Pressable style={styles.button} onPress={handleSubmit}>
               <Text>Submit</Text>
             </Pressable>
           </View>

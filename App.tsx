@@ -1,39 +1,26 @@
 import React from "react";
+
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
 import styles from "./Styles";
+import Login from "./screens/Login";
+
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Mainmenu from "./screens/Mainmenu";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [form, setForm] = React.useState({
-    username: "",
-    password: "",
-  });
   return (
-    <View style={styles.container}>
-      <View>
-        <SafeAreaView>
-          <View style={styles.card}>
-            <Text>Login</Text>
-            <TextInput
-              style={styles.inputText}
-              editable
-              onChangeText={(username) => setForm({ ...form, username })}
-              placeholder="Username"
-              value={form.username}
-            />
-            <TextInput
-              style={styles.inputText}
-              editable
-              onChangeText={(password) => setForm({ ...form, password })}
-              placeholder="Password"
-              keyboardType="visible-password"
-              value={form.password}
-            />
-            <Pressable>
-              <Text>Submit</Text>
-            </Pressable>
-          </View>
-        </SafeAreaView>
-      </View>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ title: "Login" }}
+        />
+        <Stack.Screen name="Mainmenu" component={Mainmenu} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

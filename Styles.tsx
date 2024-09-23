@@ -2,10 +2,14 @@ import Themes from "./Themes";
 import { StyleSheet } from "react-native";
 
 const Styles = StyleSheet.create({
+  containerLogin: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
   container: {
     alignItems: "center",
     justifyContent: "center",
-
     flex: 1,
   },
   inputText: {
@@ -18,14 +22,25 @@ const Styles = StyleSheet.create({
     backgroundColor: "white",
   },
   card: {
-    textAlign: "center",
-    alignItems: "center",
     justifyContent: "center",
     borderRadius: 15,
     borderColor: "gray",
-    width: 250,
-    height: 300,
+    padding: 50,
     borderWidth: 2,
+  },
+  titleText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    alignItems: "center",
+    textAlign: "center",
+  },
+
+  button: {
+    backgroundColor: Themes.primary,
+    padding: 5,
+    width: "100%",
+    alignItems: "center",
+    marginVertical: 5,
   },
 });
 

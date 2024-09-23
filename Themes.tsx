@@ -1,5 +1,5 @@
 const Themes = {
-  primary: "",
+  primary: "#0c62fc",
   secondary: "",
   tertiary: "",
   error: "",
