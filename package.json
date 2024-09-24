@@ -17,6 +17,8 @@
     "expo-media-library": "^16.0.5",
     "expo-sqlite": "^14.0.6",
     "expo-status-bar": "~1.12.1",
+    "extract-colors": "^4.0.8",
+    "get-pixels": "^3.3.3",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.74.5"
