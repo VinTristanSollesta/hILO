@@ -41,6 +41,11 @@ const Styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 5,
   },
+  buttonText: {
+    color: "white",
+    textAlign: "center",
+    alignItems: "center",
+  },
 });
 
 export default Styles;
