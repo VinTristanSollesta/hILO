@@ -13,15 +13,24 @@ const db = new sqlite3.Database("./database.db", (err) => {
     console.error(err.message);
   } else {
     console.log("Connected to the SQLite database.");
+
+    // Create the users table if it doesn't exist
     db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             email TEXT
         )`);
+
+    // Create the colors table if it doesn't exist
+    db.run(`CREATE TABLE IF NOT EXISTS colors (
+            colorId INTEGER PRIMARY KEY AUTOINCREMENT,
+            colorCode TEXT,
+            colorName TEXT
+        )`);
   }
 });
 
-// Basic CRUD routes
+// Basic CRUD routes for users
 app.get("/users", (req, res) => {
   db.all("SELECT * FROM users", [], (err, rows) => {
     if (err) {
