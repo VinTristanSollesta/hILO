@@ -1,59 +1,61 @@
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
-const cors = require("cors"); // To enable cross-origin requests from React Native
+const cors = require("cors");
+
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
+// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(cors()); // Allow requests from the frontend
 
-// Initialize SQLite database
+// Connect to SQLite Database
 const db = new sqlite3.Database("./database.db", (err) => {
   if (err) {
-    console.error(err.message);
+    console.error("Error opening database:", err.message);
   } else {
-    console.log("Connected to the SQLite database.");
+    console.log("Connected to SQLite database.");
 
-    // Create the users table if it doesn't exist
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT
-        )`);
-
-    // Create the colors table if it doesn't exist
-    db.run(`CREATE TABLE IF NOT EXISTS colors (
-            colorId INTEGER PRIMARY KEY AUTOINCREMENT,
-            colorCode TEXT,
-            colorName TEXT
-        )`);
+    // Create a sample table if it doesn't exist
+    db.run(
+      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
+      (err) => {
+        if (err) {
+          console.error("Error creating table:", err.message);
+        }
+      }
+    );
   }
 });
 
-// Basic CRUD routes for users
+// Sample GET route to fetch users
 app.get("/users", (req, res) => {
   db.all("SELECT * FROM users", [], (err, rows) => {
     if (err) {
-      return res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
+      return;
     }
-    res.json(rows);
+    res.json({ users: rows });
   });
 });
 
+// Sample POST route to add a user
 app.post("/users", (req, res) => {
   const { name, email } = req.body;
   db.run(
-    "INSERT INTO users (name, email) VALUES (?, ?)",
+    `INSERT INTO users (name, email) VALUES (?, ?)`,
     [name, email],
     function (err) {
       if (err) {
-        return res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
+        return;
       }
       res.json({ id: this.lastID });
     }
   );
 });
 
-app.listen(port, () => {
-  console.log(`Backend server running at http://localhost:${port}`);
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

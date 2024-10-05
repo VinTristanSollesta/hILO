@@ -34,10 +34,42 @@ const OpenCamera = () => {
       try {
         const photo: any = await cameraRef.current.takePictureAsync();
         setImageUri(photo.uri);
-        setImages((prevImages) => [...prevImages, photo.uri]); // Update images state
+        setImages((prevImages) => [...prevImages, photo.uri]);
+
+        // Call function to upload image to backend
+        uploadImage(photo.uri);
       } catch (error) {
         console.error("Error taking picture: ", error);
       }
+    }
+  };
+
+  const uploadImage = async (uri: string) => {
+    try {
+      // Convert image to form data
+      const formData = new FormData();
+      formData.append("image", {
+        uri,
+        name: `photo.jpg`,
+        type: `image/jpg`,
+      } as any);
+
+      // Change the URL to your server endpoint
+      const response = await fetch("https://localhost:3001/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.ok) {
+        console.log("Image uploaded successfully");
+      } else {
+        console.error("Image upload failed");
+      }
+    } catch (error) {
+      console.error("Error uploading image: ", error);
     }
   };
 
