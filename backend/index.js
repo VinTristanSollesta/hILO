@@ -55,6 +55,33 @@ app.post("/users", (req, res) => {
   );
 });
 
+// Sample GET route to fetch colors
+app.get("/colors", (req, res) => {
+  db.all("SELECT * FROM colors", [], (err, rows) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({ users: rows });
+  });
+});
+
+// Sample POST route to add colors
+app.post("/colors", (req, res) => {
+  const { name, email } = req.body;
+  db.run(
+    `INSERT INTO colors (colorName, colorHex) VALUES (?, ?)`,
+    [name, email],
+    function (err) {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
