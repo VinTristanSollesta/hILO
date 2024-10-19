@@ -5,6 +5,11 @@ const ColorExtract = () => {
   const [colors, setColors] = useState([]);
 
   useEffect(() => {}, []);
+  //add image picker function
+
+  //post the extracted colors to database function
+
+  //fetch data
   return (
     <View>
       <View>Test 1234</View>
