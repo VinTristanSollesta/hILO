@@ -1,91 +1,119 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
+const multer = require("multer");
 const cors = require("cors");
-require("dotenv").config();
-
-console.log(process.env.TEXT);
+const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
+const fs = require("fs");
 
 const app = express();
-const PORT = 3000;
+const port = 3001;
 
-// Middleware
+// Enable CORS to allow requests from your React Native app
 app.use(cors());
-app.use(express.json());
 
-// Connect to SQLite Database
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Uploads directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Rename the file to avoid conflicts
+  },
+});
+
+// Set up multer for file uploads with file type filtering
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    // Define allowed file types
+    const filetypes = /jpeg|jpg|png|gif/; // Add other file types if necessary
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+
+    if (mimetype && extname) {
+      return cb(null, true); // Accept the file
+    }
+    cb(
+      "Error: File upload only supports the following filetypes - " + filetypes
+    ); // Reject the file
+  },
+});
+
+// Create the uploads directory if it doesn't exist
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
+// Set up SQLite3 database
 const db = new sqlite3.Database("./database.db", (err) => {
   if (err) {
-    console.error("Error opening database:", err.message);
+    console.error("Error opening database", err.message);
   } else {
-    console.log("Connected to SQLite database.");
-
-    // Create a sample table if it doesn't exist
     db.run(
-      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
+      `
+      CREATE TABLE IF NOT EXISTS images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        file_name TEXT NOT NULL,
+        file_path TEXT NOT NULL,
+        upload_time DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `,
       (err) => {
         if (err) {
-          console.error("Error creating table:", err.message);
+          console.error("Error creating table", err.message);
         }
       }
     );
   }
 });
 
-// Sample GET route to fetch users
-app.get("/users", (req, res) => {
-  db.all("SELECT * FROM users", [], (err, rows) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({ users: rows });
-  });
-});
+// Handle image upload
+app.post("/upload", upload.single("image"), (req, res) => {
+  try {
+    const fileName = req.file.filename;
+    const filePath = path.join("uploads", fileName);
 
-// Sample POST route to add a user
-app.post("/users", (req, res) => {
-  const { name, email } = req.body;
-  db.run(
-    `INSERT INTO users (name, email) VALUES (?, ?)`,
-    [name, email],
-    function (err) {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
+    // Insert image details into SQLite database
+    db.run(
+      `INSERT INTO images (file_name, file_path) VALUES (?, ?)`,
+      [fileName, filePath],
+      function (err) {
+        if (err) {
+          console.error("Error inserting into database", err.message);
+          res.status(500).json({ message: "Database error" });
+        } else {
+          console.log(
+            `File uploaded and saved to database with ID: ${this.lastID}`
+          );
+          res.status(200).json({
+            message: "Image uploaded and saved",
+            id: this.lastID,
+            file: req.file,
+          });
+        }
       }
-      res.json({ id: this.lastID });
-    }
-  );
+    );
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+    res.status(500).json({ message: "Image upload failed", error });
+  }
 });
 
-// Sample GET route to fetch colors
-app.get("/colors", (req, res) => {
-  db.all("SELECT * FROM colors", [], (err, rows) => {
+// Get all uploaded images
+app.get("/images", (req, res) => {
+  db.all("SELECT * FROM images", [], (err, rows) => {
     if (err) {
-      res.status(400).json({ error: err.message });
-      return;
+      console.error("Error fetching images: ", err.message);
+      res.status(500).json({ message: "Error fetching images" });
+    } else {
+      res.status(200).json({ images: rows });
     }
-    res.json({ users: rows });
   });
-});
-
-// Sample POST route to add colors
-app.post("/colors", (req, res) => {
-  const { name, email } = req.body;
-  db.run(
-    `INSERT INTO colors (colorName, colorHex) VALUES (?, ?)`,
-    [name, email],
-    function (err) {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
-      }
-      res.json({ id: this.lastID });
-    }
-  );
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running on http://192.168.0.109:${port}`);
 });
