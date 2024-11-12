@@ -1,20 +1,52 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Styles from "../Styles";
 
 const OpenCamera = () => {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]);
   const cameraRef = useRef<CameraView | null>(null);
   const navigation = useNavigation();
 
-  if (!permission) {
-    return <View />;
-  }
+  useEffect(() => {
+    loadImage();
+  }, []);
+
+  useEffect(() => {
+    if (imageUri) saveImage(imageUri);
+  }, [imageUri]);
+
+  const loadImage = async () => {
+    try {
+      const storedImage = await AsyncStorage.getItem("image");
+      if (storedImage) {
+        setImageUri(storedImage);
+      }
+    } catch (error) {
+      console.error("Failed to load image", error);
+    }
+  };
+
+  const saveImage = async (uri: string) => {
+    try {
+      await AsyncStorage.setItem("image", uri);
+    } catch (error) {
+      console.error("Failed to save image", error);
+    }
+  };
+
+  if (!permission) return <View />;
 
   if (!permission.granted) {
     return (
@@ -32,44 +64,15 @@ const OpenCamera = () => {
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
-        const photo: any = await cameraRef.current.takePictureAsync();
+        const photo: any = await cameraRef.current.takePictureAsync({
+          quality: 1,
+          base64: true,
+        });
         setImageUri(photo.uri);
-        setImages((prevImages) => [...prevImages, photo.uri]);
-
-        // Call function to upload image to backend
-        uploadImage(photo.uri);
+        console.log(photo.uri);
       } catch (error) {
         console.error("Error taking picture: ", error);
       }
-    }
-  };
-
-  const uploadImage = async (uri: string) => {
-    try {
-      // Convert image to form data
-      const formData = new FormData();
-      formData.append("image", {
-        uri,
-        name: `photo.jpg`,
-        type: `image/jpg`,
-      } as any);
-
-      // Change the URL to your server endpoint
-      const response = await fetch("https://localhost:3001/upload", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.ok) {
-        console.log("Image uploaded successfully");
-      } else {
-        console.error("Image upload failed");
-      }
-    } catch (error) {
-      console.error("Error uploading image: ", error);
     }
   };
 
@@ -82,13 +85,14 @@ const OpenCamera = () => {
           </TouchableOpacity>
           <TouchableOpacity
             //@ts-ignore
-            onPress={() => navigation.navigate("Library", { images })}
+            onPress={() => navigation.navigate("Library", { imageUri })}
             style={styles.captureButton}
           >
             <Text style={styles.captureButtonText}>Go to Library</Text>
           </TouchableOpacity>
         </View>
       </CameraView>
+
       {imageUri && (
         <View style={styles.imageContainer}>
           <Image source={{ uri: imageUri }} style={styles.image} />
@@ -117,11 +121,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   captureButton: {
-    backgroundColor: "#1E90FF", // Change the color as needed
+    backgroundColor: "#1E90FF",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",
-    margin: 5, // Add margin for spacing
+    margin: 5,
   },
   captureButtonText: {
     color: "white",
