@@ -32,6 +32,7 @@ const OpenCamera = () => {
       const storedImage = await AsyncStorage.getItem("image");
       if (storedImage) {
         setImageUri(storedImage);
+        console.log(imageUri);
       }
     } catch (error) {
       console.error("Failed to load image", error);
@@ -85,10 +86,10 @@ const OpenCamera = () => {
           </TouchableOpacity>
           <TouchableOpacity
             //@ts-ignore
-            onPress={() => navigation.navigate("Library", { imageUri })}
+            onPress={() => loadImage()}
             style={styles.captureButton}
           >
-            <Text style={styles.captureButtonText}>Go to Library</Text>
+            <Text style={styles.captureButtonText}>Extract Colors</Text>
           </TouchableOpacity>
         </View>
       </CameraView>
