@@ -1,16 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Styles from "../Styles";
+import { getColors, ImageColorsResult } from "react-native-image-colors";
 
 const OpenCamera = () => {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -18,6 +12,7 @@ const OpenCamera = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const cameraRef = useRef<CameraView | null>(null);
   const navigation = useNavigation();
+  const [colors, setColors] = useState<ImageColorsResult | null>(null);
 
   useEffect(() => {
     loadImage();
@@ -32,7 +27,7 @@ const OpenCamera = () => {
       const storedImage = await AsyncStorage.getItem("image");
       if (storedImage) {
         setImageUri(storedImage);
-        console.log(imageUri);
+        console.log(storedImage);
       }
     } catch (error) {
       console.error("Failed to load image", error);
@@ -44,6 +39,14 @@ const OpenCamera = () => {
       await AsyncStorage.setItem("image", uri);
     } catch (error) {
       console.error("Failed to save image", error);
+    }
+  };
+
+  const saveColors = async (extractedColors: ImageColorsResult) => {
+    try {
+      await AsyncStorage.setItem("colors", JSON.stringify(extractedColors));
+    } catch (error) {
+      console.error("Failed to save colors", error);
     }
   };
 
@@ -71,9 +74,24 @@ const OpenCamera = () => {
         });
         setImageUri(photo.uri);
         console.log(photo.uri);
+        extractColors(photo.uri); // Extract colors after taking the picture
       } catch (error) {
         console.error("Error taking picture: ", error);
       }
+    }
+  };
+
+  const extractColors = async (uri: string) => {
+    try {
+      const result = await getColors(uri, {
+        fallback: "#228B22",
+        cache: true,
+        key: uri,
+      });
+      setColors(result);
+      await saveColors(result); // Save extracted colors to AsyncStorage
+    } catch (error) {
+      console.error("Error fetching colors: ", error);
     }
   };
 
@@ -85,8 +103,7 @@ const OpenCamera = () => {
             <Text style={styles.captureButtonText}>Take Picture</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            //@ts-ignore
-            onPress={() => loadImage()}
+            onPress={() => console.log("Image: ", imageUri)}
             style={styles.captureButton}
           >
             <Text style={styles.captureButtonText}>Extract Colors</Text>
@@ -115,6 +132,7 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
+
   buttonContainer: {
     flex: 1,
     justifyContent: "flex-end",
